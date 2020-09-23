@@ -10,7 +10,6 @@ cd /app
 
 if [ -e $PROJECT ]; then
   cd $PROJECT
-  git pull
   git submodule update
 fi
 
