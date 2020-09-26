@@ -5,7 +5,10 @@ services:
     container_name: docsy-server
     volumes:
       - ./:/app
+      - share:/share
     working_dir: /app
+    env_file:
+      - docker.env
     ports:
       - 1313:1313
     command:
@@ -15,6 +18,33 @@ services:
     container_name: html-to-pdf
     volumes:
       - ./:/app
+      - share:/share
     working_dir: /app
+    env_file:
+      - docker.env
     depends_on:
       - docsy
+  docsy-build:
+    image: tsttakakuracr.azurecr.io/docsy-build:latest
+    container_name: docsy-build
+    volumes:
+      - ./:/app
+      - share:/share
+    working_dir: /app
+    env_file:
+      - docker.env
+    command:
+      - build
+  deploy:
+    image: tsttakakuracr.azurecr.io/docsy-build-cli:latest
+    container_name: deploy
+    volumes:
+      - ./:/app
+      - share:/share
+    working_dir: /app
+    env_file:
+      - docker.env
+    depends_on:
+      - docsy-build
+volumes:
+  share:

@@ -37,6 +37,7 @@ WORKDIR /temp
 
 RUN echo -e "\
 cd /app \n\
+until [ -e /share/updated-git ]; do sleep 1; done; \n\
 bash run.sh "'dummy $@'" \n\
 " > boot.sh
 

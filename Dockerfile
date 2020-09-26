@@ -37,9 +37,6 @@ COPY package*.json /node/
 RUN cd /node \
 && npm i
 
-ENV PROJECT docsy-example
-ENV GIT https://github.com/takakura-s/docsy-example.git
-
 RUN cd /temp \
 && git config --global user.email "you@example.com" \
 && git config --global user.name "Your Name" \
@@ -55,6 +52,7 @@ if [ ! -e .git ]; then \n\
     cd $PROJECT \n\
   fi \n\
 fi \n\
+touch /share/updated-git \n\
 bash run.sh "'$PROJECT $@'" \n\
 " > boot.sh
 
