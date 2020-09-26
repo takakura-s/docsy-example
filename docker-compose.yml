@@ -1,9 +1,8 @@
 version: '3.7'
 services:
   docsy:
-#     build: ./
     image: tsttakakuracr.azurecr.io/docsy-build:latest
-    container_name: docsy
+    container_name: docsy-server
     volumes:
       - ./:/app
     working_dir: /app
@@ -11,3 +10,11 @@ services:
       - 1313:1313
     command:
       - server
+  pdf:
+    image: tsttakakuracr.azurecr.io/html-to-pdf:latest
+    container_name: html-to-pdf
+    volumes:
+      - ./:/app
+    working_dir: /app
+    depends_on:
+      - docsy
