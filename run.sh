@@ -32,7 +32,8 @@ function run_main() {
         ln -s /node/node_modules/ ./ &>/dev/null
         set -e
         hugo
-        touch /share/done-build;;
+        touch /share/done-build
+        echo "Finished build";;
     "server" )
         hugo server --bind 0.0.0.0;;
     "bash" )
@@ -40,11 +41,11 @@ function run_main() {
     "deploy" )
         echo "Wait for build."
         wait_file_exist /share/done-build 
-# until [ -e /share/done-build ]; do sleep 1; done;
         echo "Start deploy."
         rm /share/done-build
         az storage blob upload-batch -d '$web' -s /app/$STATIC_CONTENT_DIR --account-name $BLOB_ACCOUNT_NAME --sas-token $BLOB_SAS
-        touch /share/done-deploy;;
+        touch /share/done-deploy
+        echo "Finished deploy";;
     "pdf" )
         echo "Wait for site."
         for i in {0..120}; do
@@ -52,34 +53,28 @@ function run_main() {
           [ $(curl -LI $DOCSY_URL -o /dev/null -s -w '%{http_code}\n') -eq 200 ] && break
           sleep 1
         done
-# until [ $(curl -LI $DOCSY_URL -o /dev/null -s -w '%{http_code}\n') -eq 200 ]; do sleep 1; done;
         echo "Start creating PDF."
         pdf_file=/app/$STATIC_CONTENT_DIR/$PDF_FILE
-echo "PDF_FILE = [$PDF_FILE]"
-echo "STATIC_CONTENT_DIR = [$STATIC_CONTENT_DIR]"
-echo "pdf_file = [$pdf_file]"
         mkdir -p $(dirname $pdf_file)
-        /usr/local/bin/entrypoint --include-background --url $DOCSY_URL --pdf $pdf_file;;
+        /usr/local/bin/entrypoint --include-background --url $DOCSY_URL --pdf $pdf_file
+        echo "Finished pdf";;
     "deploy-with-pdf" )
         MODE="deploy"
         run_main
         echo "Wait for pdf."
         wait_file_exist /share/done-pdf
-# until [ -e /share/done-pdf ]; do sleep 1; done;
         echo "Start deploy for PDF."
-echo "PDF_FILE = [$PDF_FILE]"
-echo "STATIC_CONTENT_DIR = [$STATIC_CONTENT_DIR]"
         pdf_dir=$(dirname $PDF_FILE)
-echo "pdf_dir = [$pdf_dir]"
         az storage blob upload-batch -d '$web/'$pdf_dir -s /app/$STATIC_CONTENT_DIR/$pdf_dir --account-name $BLOB_ACCOUNT_NAME --sas-token $BLOB_SAS
-        touch /share/done-deploy-pdf;;
+        touch /share/done-deploy-pdf
+        echo "Finished deploy-with-pdf";;
     "deploy-after-pdf" )
         echo "Wait for deploy."
         wait_file_exist /share/done-deploy
-# until [ -e /share/done-deploy ]; do sleep 1; done;
         MODE="pdf"
         run_main
-        touch /share/done-pdf;;
+        touch /share/done-pdf
+        echo "Finished deploy-after-pdf";;
     *)
         echo "Unknown mode."
   esac
