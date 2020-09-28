@@ -137,7 +137,7 @@
                                 },
                                 {
                                     "name": "PDF_FILE",
-                                    "value": "[concat(variables('project'),'/',variables('pdf-file'))]"
+                                    "value": "[variables('pdf-file')]"
                                 }
                             ],
                             "volumeMounts": [

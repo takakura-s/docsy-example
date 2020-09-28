@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 PROJECT=$1
 MODE=$2
@@ -19,9 +20,11 @@ function run_main() {
           mkdir public
         fi
         cd /temp
+        set +e
         ln -s $path/.* ./ &>/dev/null
         ln -s $path/* ./ &>/dev/null
         ln -s /node/node_modules/ ./ &>/dev/null
+        set -e
         hugo
         touch /share/done-build;;
     "server" )
