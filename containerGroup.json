@@ -1,0 +1,193 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "containerGroupName": {
+            "type": "string",
+            "defaultValue": "tst-docsy-group",
+            "metadata": {
+                "description": "Container Group name."
+            }
+        }
+    },
+    "variables": {
+        "docsy-build-image": "tsttakakuracr.azurecr.io/docsy-build:latest",
+        "deploy-image": "tsttakakuracr.azurecr.io/docsy-build-cli:latest",
+        "pdf-image": "tsttakakuracr.azurecr.io/html-to-pdf:latest",
+        "project": "docsy-example",
+        "git": "https://github.com/takakura-s/docsy-example.git",
+        "blob-account-name": "tsttakakura03",
+        "blob-sas": "?sp=racwdl&st=2020-09-24T04:15:32Z&se=2020-11-28T04:15:00Z&sv=2019-12-12&sr=c&sig=%2BKDDh3VRC8b2UJxQ5BhhpUdiuANxj1UuPHGykJY%2BuvQ%3D",
+        "static-content-dir": "public",
+        "pdf-file": "pdf/guide.pdf",
+        "docsy-url": "https://tsttakakura03.z11.web.core.windows.net/docs/tasks/beds/"
+    },
+    "resources": [
+        {
+            "name": "[parameters('containerGroupName')]",
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2019-12-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "containers": [
+                    {
+                        "name": "docsy-build",
+                        "properties": {
+                            "image": "[variables('docsy-build-image')]",
+                            "resources": {
+                                "requests": {
+                                    "cpu": 1,
+                                    "memoryInGb": 1.5
+                                }
+                            },
+                            "environmentVariables": [
+                                {
+                                    "name": "PROJECT",
+                                    "value": "[variables('project')]"
+                                },
+                                {
+                                    "name": "GIT",
+                                    "value": "[variables('git')]"
+                                }
+                            ],
+                            "volumeMounts": [
+                                {
+                                    "name": "azurefile",
+                                    "mountPath": "/app"
+                                },
+                                {
+                                    "name": "emptydir1",
+                                    "mountPath": "/share"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "deploy",
+                        "properties": {
+                            "image": "[variables('deploy-image')]",
+                            "command": [
+                                "bash",
+                                "[concat('/app/',variables('project'),'/run.sh')]",
+                                "[variables('project')]",
+                                "deploy-with-pdf"
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "cpu": 1,
+                                    "memoryInGb": 1.5
+                                }
+                            },
+                            "environmentVariables": [
+                                {
+                                    "name": "PROJECT",
+                                    "value": "[variables('project')]"
+                                },
+                                {
+                                    "name": "BLOB_ACCOUNT_NAME",
+                                    "value": "[variables('blob-account-name')]"
+                                },
+                                {
+                                    "name": "BLOB_SAS",
+                                    "value": "[variables('blob-sas')]"
+                                },
+                                {
+                                    "name": "STATIC_CONTENT_DIR",
+                                    "value": "[concat(variables('project'),'/',variables('static-content-dir'))]"
+                                },
+                                {
+                                    "name": "PDF_FILE",
+                                    "value": "[concat(variables('project'),'/',variables('pdf-file'))]"
+                                }
+                            ],
+                            "volumeMounts": [
+                                {
+                                    "name": "azurefile",
+                                    "mountPath": "/app"
+                                },
+                                {
+                                    "name": "emptydir1",
+                                    "mountPath": "/share"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "pdf",
+                        "properties": {
+                            "image": "[variables('pdf-image')]",
+                            "command": [
+                                "bash",
+                                "[concat('/app/',variables('project'),'/run.sh')]",
+                                "[variables('project')]",
+                                "deploy-after-pdf"
+                            ],
+                            "resources": {
+                                "requests": {
+                                    "cpu": 1,
+                                    "memoryInGb": 1.5
+                                }
+                            },
+                            "environmentVariables": [
+                                {
+                                    "name": "PROJECT",
+                                    "value": "[variables('project')]"
+                                },
+                                {
+                                    "name": "DOCSY_URL",
+                                    "value": "[variables('docsy-url')]"
+                                },
+                                {
+                                    "name": "PDF_FILE",
+                                    "value": "[concat(variables('project'),'/',variables('pdf-file'))]"
+                                }
+                            ],
+                            "volumeMounts": [
+                                {
+                                    "name": "azurefile",
+                                    "mountPath": "/app"
+                                },
+                                {
+                                    "name": "emptydir1",
+                                    "mountPath": "/share"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "imageRegistryCredentials": [
+                    {
+                        "server": "tsttakakuracr.azurecr.io",
+                        "username": "tsttakakuracr",
+                        "password": "eto97rQXRN6NtDtmFLsZSNzzpS/3RrcV"
+                    }
+                ],
+                "restartPolicy": "Never",
+                "volumes": [
+                    {
+                        "name": "azurefile",
+                        "azureFile": {
+                            "shareName": "aci01",
+                            "storageAccountName": "tsttakakuras01",
+                            "storageAccountKey": "CT+wzzDn+q5EqY1xu39Wk4HnwfO5SHOLXLvFbO+Yfozk+v4b2tszIKuoZRjFRxkH7ni/Ml61y7ASzzJHgDb+hw=="
+                        }
+                    },
+                    {
+                        "name": "emptydir1",
+                        "emptyDir": {}
+                    }
+                ],
+                "networkProfile": {
+                    "id": "/subscriptions/f487be4c-c382-4323-9a84-9b7e4a4d83bd/resourceGroups/takakura-s-01-rg/providers/Microsoft.Network/networkProfiles/aci-network-profile-tst-taka01-vnet-aci"
+                },
+                "osType": "Linux"
+            }
+        }
+    ],
+    "outputs": {
+        "containerIPv4Address": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.ContainerInstance/containerGroups/', parameters('containerGroupName'))).ipAddress.ip]"
+        }
+    }
+}

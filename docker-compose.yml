@@ -24,7 +24,7 @@ services:
       - docker.env
     depends_on:
       - docsy
-  docsy-build:
+  build:
     image: tsttakakuracr.azurecr.io/docsy-build:latest
     container_name: docsy-build
     volumes:
@@ -45,6 +45,6 @@ services:
     env_file:
       - docker.env
     depends_on:
-      - docsy-build
+      - build
 volumes:
   share:

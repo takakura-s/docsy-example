@@ -38,6 +38,11 @@ WORKDIR /temp
 RUN echo -e "\
 cd /app \n\
 until [ -e /share/updated-git ]; do sleep 1; done; \n\
+if [ ! -e .git ]; then \n\
+  if [ -e "'$PROJECT'" ]; then \n\
+    cd "'$PROJECT'" \n\
+  fi \n\
+fi \n\
 bash run.sh "'dummy $@'" \n\
 " > boot.sh
 

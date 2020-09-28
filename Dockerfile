@@ -43,19 +43,19 @@ RUN cd /temp \
 && echo -e "\
 cd /app \n\
 if [ ! -e .git ]; then \n\
-  if [ -e $PROJECT ]; then \n\
-    cd $PROJECT \n\
+  if [ -e "'$PROJECT'" ]; then \n\
+    cd "'$PROJECT'" \n\
     git fetch \n\
     git reset --hard origin/master \n\
+    git submodule update \n\
   else \n\
-    git clone --recurse-submodules --depth 1 $GIT \n\
-    cd $PROJECT \n\
+    git clone --recurse-submodules --depth 1 "'$GIT'" \n\
+    cd "'$PROJECT'" \n\
   fi \n\
 fi \n\
 touch /share/updated-git \n\
 bash run.sh "'$PROJECT $@'" \n\
 " > boot.sh
-
 
 ENTRYPOINT ["bash", "/temp/boot.sh"]
 
