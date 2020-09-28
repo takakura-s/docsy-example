@@ -37,7 +37,7 @@ WORKDIR /temp
 
 RUN echo -e "\
 cd /app \n\
-until [ -e /share/updated-git ]; do echo "chk"; sleep 1; done; \n\
+until [ -e /share/updated-git ]; do sleep 1; done; \n\
 if [ ! -e .git ]; then \n\
   if [ -e "'$PROJECT'" ]; then \n\
     cd "'$PROJECT'" \n\

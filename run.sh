@@ -42,8 +42,9 @@ function run_main() {
         echo "Wait for site."
         until [ $(curl -LI $DOCSY_URL -o /dev/null -s -w '%{http_code}\n') -eq 200 ]; do sleep 1; done;
         echo "Start creating PDF."
-        mkdir -p $(dirname $PDF_FILE)
-        /usr/local/bin/entrypoint --include-background --url $DOCSY_URL --pdf /app/$STATIC_CONTENT_DIR/$PDF_FILE;;
+        pdf_file=/app/$STATIC_CONTENT_DIR/$PDF_FILE
+        mkdir -p $(dirname $pdf_file)
+        /usr/local/bin/entrypoint --include-background --url $DOCSY_URL --pdf $pdf_file;;
     "deploy-with-pdf" )
         MODE="deploy"
         run_main
