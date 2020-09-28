@@ -47,7 +47,10 @@ function run_main() {
         echo "Wait for pdf."
         until [ -e /share/done-pdf ]; do sleep 1; done;
         echo "Start deploy for PDF."
+echo "PDF_FILE = [$PDF_FILE]"
+echo "STATIC_CONTENT_DIR = [$STATIC_CONTENT_DIR]"
         pdf_dir=$(dirname $PDF_FILE)
+echo "pdf_dir = [$pdf_dir]"
         az storage blob upload-batch -d '$web/$pdf_dir' -s /app/$STATIC_CONTENT_DIR/$pdf_dir --account-name $BLOB_ACCOUNT_NAME --sas-token $BLOB_SAS
         touch /share/done-deploy-pdf;;
     "deploy-after-pdf" )
