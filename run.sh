@@ -12,6 +12,12 @@ if [ -e $PROJECT ]; then
   cd $PROJECT
 fi
 
+function wait_file_exist() {
+  check_file=$1
+  for i in {0..180}; do [ -e $check_file ] && break; sleep 1; done
+  [ -e $check_file ] || exit 100
+}
+
 function run_main() {
   case $MODE in
     "build" )
@@ -33,14 +39,20 @@ function run_main() {
         bash;;
     "deploy" )
         echo "Wait for build."
-        until [ -e /share/done-build ]; do sleep 1; done;
+        wait_file_exist /share/done-build 
+# until [ -e /share/done-build ]; do sleep 1; done;
         echo "Start deploy."
         rm /share/done-build
         az storage blob upload-batch -d '$web' -s /app/$STATIC_CONTENT_DIR --account-name $BLOB_ACCOUNT_NAME --sas-token $BLOB_SAS
         touch /share/done-deploy;;
     "pdf" )
         echo "Wait for site."
-        until [ $(curl -LI $DOCSY_URL -o /dev/null -s -w '%{http_code}\n') -eq 200 ]; do sleep 1; done;
+        for i in {0..120}; do
+          [ $i -ge 120 ] && exit 100
+          [ $(curl -LI $DOCSY_URL -o /dev/null -s -w '%{http_code}\n') -eq 200 ] && break
+          sleep 1
+        done
+# until [ $(curl -LI $DOCSY_URL -o /dev/null -s -w '%{http_code}\n') -eq 200 ]; do sleep 1; done;
         echo "Start creating PDF."
         pdf_file=/app/$STATIC_CONTENT_DIR/$PDF_FILE
 echo "PDF_FILE = [$PDF_FILE]"
@@ -52,7 +64,8 @@ echo "pdf_file = [$pdf_file]"
         MODE="deploy"
         run_main
         echo "Wait for pdf."
-        until [ -e /share/done-pdf ]; do sleep 1; done;
+        wait_file_exist /share/done-pdf
+# until [ -e /share/done-pdf ]; do sleep 1; done;
         echo "Start deploy for PDF."
 echo "PDF_FILE = [$PDF_FILE]"
 echo "STATIC_CONTENT_DIR = [$STATIC_CONTENT_DIR]"
@@ -62,7 +75,8 @@ echo "pdf_dir = [$pdf_dir]"
         touch /share/done-deploy-pdf;;
     "deploy-after-pdf" )
         echo "Wait for deploy."
-        until [ -e /share/done-deploy ]; do sleep 1; done;
+        wait_file_exist /share/done-deploy
+# until [ -e /share/done-deploy ]; do sleep 1; done;
         MODE="pdf"
         run_main
         touch /share/done-pdf;;

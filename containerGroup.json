@@ -136,6 +136,10 @@
                                     "value": "[variables('docsy-url')]"
                                 },
                                 {
+                                    "name": "STATIC_CONTENT_DIR",
+                                    "value": "[concat(variables('project'),'/',variables('static-content-dir'))]"
+                                },
+                                {
                                     "name": "PDF_FILE",
                                     "value": "[variables('pdf-file')]"
                                 }
