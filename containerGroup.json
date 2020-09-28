@@ -68,8 +68,7 @@
                             "image": "[variables('deploy-image')]",
                             "command": [
                                 "bash",
-                                "[concat('/app/',variables('project'),'/run.sh')]",
-                                "[variables('project')]",
+                                "/temp/boot.sh",
                                 "deploy-with-pdf"
                             ],
                             "resources": {
@@ -118,8 +117,7 @@
                             "image": "[variables('pdf-image')]",
                             "command": [
                                 "bash",
-                                "[concat('/app/',variables('project'),'/run.sh')]",
-                                "[variables('project')]",
+                                "/temp/boot.sh",
                                 "deploy-after-pdf"
                             ],
                             "resources": {
